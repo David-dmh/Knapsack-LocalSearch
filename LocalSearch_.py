@@ -7,6 +7,12 @@ import pandas as pd
 os.chdir("~/PB1/")
 
 def obj_fn(myvec):
+    """ Computes objective function value for a given coefficient vector.
+    Args:
+        myvec (list): Binary vector of coefficients.
+    Returns:
+        z (int): Objective function value.
+    """
     s1 = myvec[0]
     s2 = myvec[1]
     s3 = myvec[2]
@@ -16,6 +22,7 @@ def obj_fn(myvec):
     s7 = myvec[6]
     s8 = myvec[7]
     s9 = myvec[8]
+    # define objective function below
     z = 8*s1 + 11*s2 + 9*s3 + 12*s4 + 14*s5 + \
         10*s6 + 6*s7 + 7*s8 + 13*s9
     
@@ -23,8 +30,12 @@ def obj_fn(myvec):
 
 
 def bitcomplement(myvec, i):
-    """
-    Returns: ith Element complemented binary vector
+    """ Performs a single-bit complement of vector at ith position.
+    Args:
+        myvec (list): Vector to be complemented.
+        i (int): Position in vector to be complemented.
+    Returns:
+        myvec (list): ith Element complemented binary vector.
     """
     myvec[i] = int(not(myvec[i]))
     
@@ -32,13 +43,16 @@ def bitcomplement(myvec, i):
 
 
 def gen_neighbourhood(st):
-    """
-    Returns: bit-complemented neighbourhood from vector
+    """ Generates neighbourhood of bit complemented vectors based on st.
+    Args:
+        st (list): Vector on which neighbourhood generation is based.
+    Returns:
+        neighbourhood (list): Bit complemented neighbours of input vector.
     """
     N = len(st)
     neighbourhood = []
     for index in range(N):
-        st_temp = copy.deepcopy(st)
+        st_temp = copy.deepcopy(st) # avoid modifying st, new value in memory
         neighbour = bitcomplement(st_temp, index)
         neighbourhood.append(neighbour)
         
@@ -46,8 +60,11 @@ def gen_neighbourhood(st):
 
 
 def is_feasible(vector):
-    """
-    Returns: True if vector violates the constraint
+    """ Checks whether vector violates given knapsackk problem constraint.
+    Args:
+        vector (list): Vector for evaluation.
+    Returns:
+        True (boolean) [doesn't violate] if LHS <= 16 else False (boolean).
     """
     lhs = vector[0] + 2*vector[1] + 3*vector[2] + 2*vector[3] + 3*vector[4]\
         + 4*vector[5] + vector[6] + 5*vector[7] + 3*vector[8]
@@ -58,14 +75,17 @@ def is_feasible(vector):
 
 
 def evaluate(current_vec):
-    """
-    Args:
-        1. current_obj: scalar value
-        2. neighbourhood: list of neighbours
-        
+    """ Vector evaluate and update procedure.
+    Args: 
+        current_vec (list): Best vector so far.
     Returns:
-        1. best_obj: new or old obj
-        2. best_vec: new or old vector
+        initial_obj (int): Initial (current) vector scalar objective function value. 
+        current_vec (list): Initial (current) vector.
+        best_obj (int): Updated scalar objective function value.
+        best_vec (list): Updated vector depending on obj value.
+        neighbourhood (list): List of generated neighbours.
+        printout_valid_neighbourhood (list): Valid neighbours also indicating 
+        infeasible solutions.
     """
     initial_obj = best_obj = obj_fn(current_vec)
     neighbourhood = gen_neighbourhood(current_vec)
@@ -100,8 +120,9 @@ def evaluate(current_vec):
     
 
 def local_search(initial_vec):
-    """
-    Local search for 9-coefficient knapsack
+    """ Local search for 9-coefficient knapsack.
+    Args:
+        initial_vec (list): Initial vector for search procedure.
     """
     ts = [] # iteration
     sts = [] # current vec
@@ -120,11 +141,13 @@ def local_search(initial_vec):
         n_hood, \
         p_v_n_hood = evaluate(best_vec)
         
-        sts.append(current_vec)
-        zs.append(initial)
-        neighbourhoods.append(n_hood)
-        newzs.append(p_v_n_hood)
-        selections.append(best_vec)
+        # store values for printouts
+        sts.append(current_vec) # add current vector
+        zs.append(initial) # add initial vector
+        neighbourhoods.append(n_hood) # add neighbourhood
+        newzs.append(p_v_n_hood) # add valid naighbourhood for printout
+        selections.append(best_vec) # add best vector
+        
         if initial >= best: 
             print("Initial: {init}".format(init=initial_vec))
             print("After {number} iterations:".format(number=t + 1))
@@ -132,6 +155,8 @@ def local_search(initial_vec):
                   .format(obj=best,
                           vec=best_vec))
             ts = [*range(t + 1)]
+            
+            # create record_df for printout purposes
             record_df = pd.DataFrame.from_dict({
                 "t": ts, 
                 "St": sts, 
@@ -152,4 +177,3 @@ def local_search(initial_vec):
 if __name__ == "__main__":
     local_search([0, 1, 1, 1, 0, 0, 1, 1, 1])
     local_search([0, 1, 0, 1, 0, 0, 0, 1, 0])
-    
